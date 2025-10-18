@@ -1,0 +1,98 @@
+﻿@model List<Panaderia_DSP.Models.ProductViewModel>
+
+@{
+    ViewData["Title"] = "Gestión de Productos";
+}
+
+<h2 class="mb-4 text-center">📦 Gestión de Productos</h2>
+
+<div class="text-end mb-3">
+    <a asp-action="Create" class="btn btn-success">➕ Nuevo producto</a>
+</div>
+
+<table class="table table-bordered table-hover shadow-sm">
+    <thead class="table-dark">
+        <tr class="text-center align-middle">
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Categoría</th>
+            <th>Precio ($)</th>
+            <th>Stock</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var p in Model)
+        {
+            string rowClass = "";
+            if (p.Stock == 0)
+                rowClass = "table-danger"; // 🟥 sin stock
+            else if (p.Stock <= 5)
+                rowClass = "table-warning"; // 🟨 bajo stock
+
+            <tr class="@rowClass text-center align-middle">
+                <td>@p.Id</td>
+                <td>@p.Nombre</td>
+                <td>@p.Categoria</td>
+                <td>@p.Precio.ToString("0.00")</td>
+                <td>@p.Stock</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@p.Id" class="btn btn-sm btn-warning me-2">✏️ Editar</a>
+
+                    <!-- Botón para abrir modal -->
+                    <button type="button" class="btn btn-sm btn-danger"
+                            data-bs-toggle="modal"
+                            data-bs-target="#deleteModal"
+                            data-id="@p.Id"
+                            data-nombre="@p.Nombre">
+                        🗑️ Eliminar
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info text-center mt-4">
+        No hay productos registrados.
+    </div>
+}
+
+<!-- 🧱 Modal de confirmación de eliminación -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form asp-action="DeleteConfirmed" method="post">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="deleteModalLabel">Eliminar producto</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="productoId" />
+                    <p>¿Seguro que deseas eliminar el producto <strong id="productoNombre"></strong>?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // 📌 Cargar datos dinámicos del producto al modal
+        const deleteModal = document.getElementById('deleteModal');
+        deleteModal.addEventListener('show.bs.modal', event => {
+            const button = event.relatedTarget;
+            const id = button.getAttribute('data-id');
+            const nombre = button.getAttribute('data-nombre');
+
+            deleteModal.querySelector('#productoId').value = id;
+            deleteModal.querySelector('#productoNombre').textContent = nombre;
+        });
+    </script>
+}

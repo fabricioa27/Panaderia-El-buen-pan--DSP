@@ -1,0 +1,38 @@
+﻿@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2 class="text-center mb-4">📊 Panel Administrativo</h2>
+
+<div class="row text-center">
+    <div class="col-md-4 mb-3">
+        <div class="card shadow-sm border-success">
+            <div class="card-body">
+                <h5 class="card-title text-success">Productos Registrados</h5>
+                <h2 class="display-6">@ViewData["TotalProductos"]</h2>
+                <a asp-controller="Products" asp-action="Index" class="btn btn-success btn-sm mt-2">Ver productos</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="card shadow-sm border-primary">
+            <div class="card-body">
+                <h5 class="card-title text-primary">Ventas Realizadas</h5>
+                <h2 class="display-6">@ViewData["TotalVentas"]</h2>
+                <a asp-controller="Sales" asp-action="Index" class="btn btn-primary btn-sm mt-2">Ver ventas</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="card shadow-sm border-warning">
+            <div class="card-body">
+                <h5 class="card-title text-warning">Productos con Stock Bajo</h5>
+                <h2 class="display-6">@ViewData["StockBajo"]</h2>
+                <a asp-controller="Products" asp-action="Index" class="btn btn-warning btn-sm mt-2">Revisar stock</a>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,25 @@
+﻿@{
+    ViewData["Title"] = "Bienvenido";
+    Layout = "~/Views/Shared/_Layout.cshtml"; // usa el layout normal
+}
+
+<div class="text-center mt-5">
+    <h1 class="display-5">Bienvenido a Panadería DSP</h1>
+    <p class="lead">Has iniciado sesión como <strong>@User.Identity.Name</strong></p>
+
+    @if (User.IsInRole("Admin"))
+    {
+        <div class="alert alert-success mt-3">
+            <h5>Panel Administrativo</h5>
+            <p>Bienvenido a panaderia El buen pan</p>
+        </div>
+    }
+    else if (User.IsInRole("Vendedor"))
+    {
+        <div class="alert alert-info mt-3">
+            <h5>Panel del Vendedor</h5>
+            <p>Bienvenido a panaderia El buen pan</p>
+        </div>
+    }
+
+</div>
