@@ -1,0 +1,118 @@
+﻿@model Panaderia_DSP.Models.SaleViewModel
+@{
+    ViewData["Title"] = "Ventas del Vendedor";
+    var ventas = (List<Panaderia_DSP.Models.SaleViewModel>)ViewBag.MisVentas;
+}
+
+<h2 class="text-center mb-4">🧾 Ventas del Vendedor</h2>
+
+@if (ViewBag.Mensaje != null)
+{
+    <div class="alert alert-success text-center">@ViewBag.Mensaje</div>
+}
+
+<form asp-action="Ventas" method="post" id="formVenta" class="mb-5">
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label asp-for="Cliente" class="form-label"></label>
+            <input asp-for="Cliente" class="form-control" placeholder="Nombre del cliente" required />
+            <span asp-validation-for="Cliente" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-6">
+            <label asp-for="ProductoId" class="form-label">Producto</label>
+            <select asp-for="ProductoId" class="form-select" id="productoSelect" required>
+                <option value="">-- Seleccione un producto --</option>
+                @foreach (var p in (List<Panaderia_DSP.Models.ProductViewModel>)ViewBag.Productos)
+                {
+                    <option value="@p.Id" data-precio="@p.Precio">@p.Nombre</option>
+                }
+            </select>
+            <span asp-validation-for="ProductoId" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <label asp-for="PrecioUnitario" class="form-label"></label>
+            <input asp-for="PrecioUnitario" class="form-control" id="precio" readonly />
+        </div>
+        <div class="col-md-4">
+            <label asp-for="Cantidad" class="form-label"></label>
+            <input asp-for="Cantidad" type="number" class="form-control" id="cantidad" min="1" required />
+            <span asp-validation-for="Cantidad" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="Total" class="form-label"></label>
+            <input asp-for="Total" class="form-control" id="total" readonly />
+        </div>
+    </div>
+
+    <div class="text-center mt-4">
+        <button type="submit" class="btn btn-success px-4">💾 Registrar Venta</button>
+    </div>
+</form>
+
+@if (ventas != null && ventas.Any())
+{
+    <h3 class="mb-3 text-center">📋 Mis Ventas Realizadas</h3>
+
+    <table class="table table-bordered table-hover shadow-sm">
+        <thead class="table-dark text-center align-middle">
+            <tr>
+                <th>ID</th>
+                <th>Fecha</th>
+                <th>Cliente</th>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio Unitario</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var v in ventas)
+            {
+                <tr class="text-center align-middle">
+                    <td>@v.Id</td>
+                    <td>@v.Fecha.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@v.Cliente</td>
+                    <td>@v.Producto</td>
+                    <td>@v.Cantidad</td>
+                    <td>$@v.PrecioUnitario.ToString("0.00")</td>
+                    <td class="fw-bold text-success">$@v.Total.ToString("0.00")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="alert alert-info text-center">
+        No has registrado ninguna venta todavía.
+    </div>
+}
+
+@section Scripts {
+    <script>
+        const productoSelect = document.getElementById('productoSelect');
+        const precioInput = document.getElementById('precio');
+        const cantidadInput = document.getElementById('cantidad');
+        const totalInput = document.getElementById('total');
+
+        productoSelect.addEventListener('change', actualizarPrecio);
+        cantidadInput.addEventListener('input', calcularTotal);
+
+        function actualizarPrecio() {
+            const selectedOption = productoSelect.options[productoSelect.selectedIndex];
+            const precio = selectedOption.getAttribute('data-precio') || 0;
+            precioInput.value = parseFloat(precio).toFixed(2);
+            calcularTotal();
+        }
+
+        function calcularTotal() {
+            const precio = parseFloat(precioInput.value) || 0;
+            const cantidad = parseInt(cantidadInput.value) || 0;
+            totalInput.value = (precio * cantidad).toFixed(2);
+        }
+    </script>
+}
