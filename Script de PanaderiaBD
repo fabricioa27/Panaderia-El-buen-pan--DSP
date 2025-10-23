@@ -1,0 +1,43 @@
+-- Crear la base de datos
+CREATE DATABASE Panaderia;
+GO
+
+USE Panaderia;
+GO
+
+-- Tabla de Categorías
+CREATE TABLE Categorias (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Nombre NVARCHAR(100) NOT NULL
+);
+GO
+
+-- Tabla de Productos
+CREATE TABLE Productos (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Nombre NVARCHAR(100) NOT NULL,
+    Precio DECIMAL(10,2) NOT NULL CHECK (Precio >= 0),
+    Stock INT NOT NULL CHECK (Stock >= 0),
+    CategoriaId INT NOT NULL,
+    FechaRegistro DATETIME DEFAULT GETDATE(),
+    CONSTRAINT FK_Productos_Categorias FOREIGN KEY (CategoriaId)
+        REFERENCES Categorias(Id)
+        ON DELETE CASCADE
+);
+GO
+
+-- Insertar categorías de ejemplo
+INSERT INTO Categorias (Nombre)
+VALUES ('Pan Dulce'), ('Pan Salado'), ('Bebidas'), ('Repostería');
+GO
+
+-- Insertar productos de ejemplo
+INSERT INTO Productos (Nombre, Precio, Stock, CategoriaId)
+VALUES 
+('Concha', 0.50, 10, 1),
+('Bolillo', 0.25, 25, 2),
+('Café con leche', 1.00, 15, 3),
+('Pastel de chocolate', 5.00, 3, 4);
+GO
+
+Select *from Productos
