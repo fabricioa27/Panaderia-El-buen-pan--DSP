@@ -1,87 +1,92 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using Panaderia_DSP.Models;
 
 namespace Panaderia_DSP.Controllers
 {
     public class AccountController : Controller
     {
-        // ✅ Vista de login (GET)
+        // 🌐 GET: Página de inicio de sesión
         [HttpGet]
-        [AllowAnonymous]
         public IActionResult Login()
         {
-            // Si ya está autenticado, redirige a la página de inicio según el rol
+            // Si ya hay sesión activa, redirigir según el rol
             if (User.Identity != null && User.Identity.IsAuthenticated)
             {
-                return RedirectToAction("Inicio");
+                if (User.IsInRole("Admin"))
+                    return RedirectToAction("Index", "Dashboard");
+                else if (User.IsInRole("Vendedor"))
+                    return RedirectToAction("Ventas", "Vendedor");
             }
 
             return View();
         }
 
-        // ✅ Procesar inicio de sesión (POST)
+        // ✅ POST: Iniciar sesión
         [HttpPost]
-        [AllowAnonymous]
-        public async Task<IActionResult> Login(LoginViewModel vm)
+        public async Task<IActionResult> Login(string username, string password)
         {
-            if (!ModelState.IsValid)
-                return View(vm);
-
-            // 🔐 Usuarios fijos por ahora
-            var usuarios = new List<(string Email, string Password, string Rol)>
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             {
-                ("admin@panaderia.com", "1234", "Admin"),
-                ("vendedor@panaderia.com", "1234", "Vendedor")
-            };
-
-            // Buscar usuario
-            var usuario = usuarios.FirstOrDefault(u =>
-                u.Email.Equals(vm.Email, StringComparison.OrdinalIgnoreCase) &&
-                u.Password == vm.Password);
-
-            if (usuario.Equals(default((string, string, string))))
-            {
-                ModelState.AddModelError("", "Correo o contraseña incorrectos");
-                return View(vm);
+                ViewBag.Error = "Debe ingresar usuario y contraseña.";
+                return View();
             }
 
-            // Crear las Claims (identidad del usuario)
-            var claims = new List<Claim>
+            // 🧠 Validación básica de usuarios (solo para el desafío)
+            if (username == "admin" && password == "1234")
             {
-                new Claim(ClaimTypes.Name, usuario.Email),
-                new Claim(ClaimTypes.Role, usuario.Rol)
-            };
+                // 👑 Rol administrador
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, username),
+                    new Claim(ClaimTypes.Role, "Admin")
+                };
 
-            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            var principal = new ClaimsPrincipal(identity);
+                var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                var principal = new ClaimsPrincipal(identity);
 
-            // Iniciar sesión
-            await HttpContext.SignInAsync(
-                CookieAuthenticationDefaults.AuthenticationScheme,
-                principal,
-                new AuthenticationProperties { IsPersistent = vm.RememberMe });
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
-            // ✅ Redirige al inicio general (cada rol verá su panel ahí)
-            return RedirectToAction("Inicio");
+                return RedirectToAction("Index", "Dashboard");
+            }
+            else if (username == "vendedor" && password == "1234")
+            {
+                // 🧍 Rol vendedor
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, username),
+                    new Claim(ClaimTypes.Role, "Vendedor")
+                };
+
+                var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                var principal = new ClaimsPrincipal(identity);
+
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+
+                return RedirectToAction("Ventas", "Vendedor");
+            }
+            else
+            {
+                // ❌ Credenciales incorrectas
+                ViewBag.Error = "Usuario o contraseña incorrectos.";
+                return View();
+            }
         }
 
-        // ✅ Página de inicio después de loguearse
-        [Authorize]
-        public IActionResult Inicio()
-        {
-            return View();
-        }
-
-        // ✅ Cerrar sesión
-        [Authorize]
+        // 🚪 GET: Cerrar sesión
+        [HttpGet]
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return RedirectToAction("Login");
+            return RedirectToAction("Login", "Account");
+        }
+
+        // 🚫 GET: Acceso denegado (para rutas restringidas)
+        [HttpGet]
+        public IActionResult AccessDenied()
+        {
+            return View();
         }
     }
 }
