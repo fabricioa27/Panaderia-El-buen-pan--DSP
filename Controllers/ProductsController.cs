@@ -35,7 +35,7 @@ namespace Panaderia_DSP.Controllers
             model.Id = _data.Productos.Any() ? _data.Productos.Max(p => p.Id) + 1 : 1;
             _data.Productos.Add(model);
 
-            return RedirectToAction("Index", "Dashboard"); // 🔥 vuelve al dashboard
+            return RedirectToAction("Index", "Dashboard");
         }
 
         [HttpGet]
@@ -70,7 +70,7 @@ namespace Panaderia_DSP.Controllers
             if (producto != null)
                 _data.Productos.Remove(producto);
 
-            return RedirectToAction("Index", "Dashboard"); // 🔥 recarga datos del panel
+            return RedirectToAction("Index", "Dashboard");
         }
     }
 }
