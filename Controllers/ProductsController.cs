@@ -17,7 +17,8 @@ namespace Panaderia_DSP.Controllers
 
         public IActionResult Index()
         {
-            return View(_data.Productos);
+            var productos = _data.GetProductos();
+            return View(productos);
         }
 
         [HttpGet]
@@ -32,17 +33,23 @@ namespace Panaderia_DSP.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            model.Id = _data.Productos.Any() ? _data.Productos.Max(p => p.Id) + 1 : 1;
-            _data.Productos.Add(model);
+            if (_data.AgregarProducto(model))
+                TempData["Mensaje"] = "✅ Producto creado exitosamente";
+            else
+                TempData["Error"] = "❌ Error al crear el producto";
 
-            return RedirectToAction("Index", "Dashboard");
+            return RedirectToAction("Index");
         }
 
         [HttpGet]
         public IActionResult Edit(int id)
         {
-            var producto = _data.Productos.FirstOrDefault(p => p.Id == id);
-            if (producto == null) return NotFound();
+            var producto = _data.GetProductoById(id);
+            if (producto == null)
+            {
+                TempData["Error"] = "Producto no encontrado";
+                return RedirectToAction("Index");
+            }
             return View(producto);
         }
 
@@ -52,13 +59,10 @@ namespace Panaderia_DSP.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            var producto = _data.Productos.FirstOrDefault(p => p.Id == model.Id);
-            if (producto == null) return NotFound();
-
-            producto.Nombre = model.Nombre;
-            producto.Precio = model.Precio;
-            producto.Stock = model.Stock;
-            producto.Categoria = model.Categoria;
+            if (_data.ActualizarProducto(model))
+                TempData["Mensaje"] = "✅ Producto actualizado exitosamente";
+            else
+                TempData["Error"] = "❌ Error al actualizar el producto";
 
             return RedirectToAction("Index");
         }
@@ -66,11 +70,12 @@ namespace Panaderia_DSP.Controllers
         [HttpPost]
         public IActionResult DeleteConfirmed(int id)
         {
-            var producto = _data.Productos.FirstOrDefault(p => p.Id == id);
-            if (producto != null)
-                _data.Productos.Remove(producto);
+            if (_data.EliminarProducto(id))
+                TempData["Mensaje"] = "✅ Producto eliminado exitosamente";
+            else
+                TempData["Error"] = "❌ Error al eliminar el producto";
 
-            return RedirectToAction("Index", "Dashboard");
+            return RedirectToAction("Index");
         }
     }
 }

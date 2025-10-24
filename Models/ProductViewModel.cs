@@ -19,5 +19,8 @@ namespace Panaderia_DSP.Models
 
         [Required(ErrorMessage = "Debe ingresar la categoría")]
         public string Categoria { get; set; }
+
+        // ✅ AGREGAR ESTA PROPIEDAD QUE FALTABA
+        public int CategoriaId { get; set; }
     }
 }

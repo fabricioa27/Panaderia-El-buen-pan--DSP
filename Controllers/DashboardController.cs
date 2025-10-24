@@ -12,13 +12,14 @@ namespace Panaderia_DSP.Controllers
         public DashboardController(DataService data)
         {
             _data = data;
+            _data.InicializarCategorias(); // ✅ Nombre correcto
         }
 
         public IActionResult Index()
         {
-            ViewData["TotalProductos"] = _data.TotalProductos();
-            ViewData["TotalVentas"] = _data.TotalVentas();
-            ViewData["StockBajo"] = _data.ProductosConStockBajo();
+            ViewData["TotalProductos"] = _data.TotalProductos(); // ✅ Nombre correcto
+            ViewData["TotalVentas"] = _data.TotalVentas(); // ✅ Nombre correcto
+            ViewData["StockBajo"] = _data.ProductosConStockBajo(); // ✅ Nombre correcto
 
             return View();
         }

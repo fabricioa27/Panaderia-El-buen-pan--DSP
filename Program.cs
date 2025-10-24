@@ -1,11 +1,22 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using MiApi.Data;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.EntityFrameworkCore;
 using Panaderia_DSP.Services;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ✅ SERVICIOS MVC
 builder.Services.AddControllersWithViews();
 
-// ✅ Autenticación con cookies
+// ✅ SERVICIOS API
+builder.Services.AddControllers();
+
+// ✅ ENTITY FRAMEWORK
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// ✅ AUTENTICACIÓN
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -16,21 +27,33 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 builder.Services.AddAuthorization();
 
-// 🧠 Servicio de datos compartido
-builder.Services.AddSingleton<DataService>();
+// ✅ SERVICIO DE DATOS (MVC)
+builder.Services.AddScoped<DataService>();
+
+// ✅ SWAGGER PARA API
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+// ✅ CONFIGURACIÓN PIPELINE
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// 🌐 Página inicial
+// ✅ RUTAS
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Account}/{action=Login}/{id?}");
+
+app.MapControllers();
 
 app.Run();

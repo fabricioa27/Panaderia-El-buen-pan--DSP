@@ -13,9 +13,17 @@
     </div>
 
     <div class="mb-3">
-        <label asp-for="Categoria" class="form-label"></label>
-        <input asp-for="Categoria" class="form-control" />
-        <span asp-validation-for="Categoria" class="text-danger"></span>
+        <label class="form-label">Categoría</label>
+        <select name="Categoria" class="form-control" required>
+            <option value="">-- Seleccione categoría --</option>
+            <option value="Pan Dulce">Pan Dulce</option>
+            <option value="Pan Salado">Pan Salado</option>
+            <option value="Bebidas">Bebidas</option>
+            <option value="Repostería">Repostería</option>
+            <option value="Galletas">Galletas</option>
+            <option value="Otros">Otros</option>
+        </select>
+        <span class="text-danger">@Html.ValidationMessage("Categoria")</span>
     </div>
 
     <div class="mb-3">

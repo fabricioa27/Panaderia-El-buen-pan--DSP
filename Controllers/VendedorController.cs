@@ -18,12 +18,10 @@ namespace Panaderia_DSP.Controllers
         [HttpGet]
         public IActionResult Ventas()
         {
-            var username = User.Identity?.Name ?? "Desconocido";
+            var username = User.Identity?.Name ?? "Vendedor";
 
-            ViewBag.Productos = _data.Productos.Where(p => p.Stock > 0).ToList();
-            ViewBag.MisVentas = _data.Ventas
-                .Where(v => v.Vendedor == username)
-                .ToList();
+            ViewBag.Productos = _data.GetProductosConStock();
+            ViewBag.MisVentas = _data.GetVentasPorVendedor(username);
 
             return View(new SaleViewModel());
         }
@@ -31,43 +29,23 @@ namespace Panaderia_DSP.Controllers
         [HttpPost]
         public IActionResult Ventas(SaleViewModel venta)
         {
-            var producto = _data.Productos.FirstOrDefault(p => p.Id == venta.ProductoId);
-            var username = User.Identity?.Name ?? "Desconocido";
-
-            if (producto == null || venta.Cantidad <= 0)
-            {
-                ModelState.AddModelError("", "Datos inválidos.");
-                ViewBag.Productos = _data.Productos.Where(p => p.Stock > 0).ToList();
-                ViewBag.MisVentas = _data.Ventas.Where(v => v.Vendedor == username).ToList();
-                return View(venta);
-            }
-
-            if (venta.Cantidad > producto.Stock)
-            {
-                ModelState.AddModelError("", "Stock insuficiente para esa venta.");
-                ViewBag.Productos = _data.Productos.Where(p => p.Stock > 0).ToList();
-                ViewBag.MisVentas = _data.Ventas.Where(v => v.Vendedor == username).ToList();
-                return View(venta);
-            }
-
-            // ✅ Registrar la venta
-            venta.Id = _data.Ventas.Any() ? _data.Ventas.Max(v => v.Id) + 1 : 1;
-            venta.Fecha = DateTime.Now;
-            venta.Producto = producto.Nombre;
-            venta.PrecioUnitario = producto.Precio;
-            venta.Total = producto.Precio * venta.Cantidad;
+            var username = User.Identity?.Name ?? "Vendedor";
             venta.Vendedor = username;
 
-            _data.Ventas.Add(venta);
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Productos = _data.GetProductosConStock();
+                ViewBag.MisVentas = _data.GetVentasPorVendedor(username);
+                return View(venta);
+            }
 
-            // 🔻 Restar stock
-            producto.Stock -= venta.Cantidad;
+            var resultado = _data.RegistrarVenta(venta);
+            ViewBag.Mensaje = resultado;
 
-            ViewBag.Productos = _data.Productos.Where(p => p.Stock > 0).ToList();
-            ViewBag.MisVentas = _data.Ventas.Where(v => v.Vendedor == username).ToList();
+            // Recargar datos
+            ViewBag.Productos = _data.GetProductosConStock();
+            ViewBag.MisVentas = _data.GetVentasPorVendedor(username);
 
-            ModelState.Clear();
-            ViewBag.Mensaje = "✅ Venta registrada correctamente.";
             return View(new SaleViewModel());
         }
     }
